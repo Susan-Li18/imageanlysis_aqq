@@ -1,0 +1,2 @@
+sample_images/fox.jpg filter=lfs diff=lfs merge=lfs -text
+sample_images/parrot.jpg filter=lfs diff=lfs merge=lfs -text
