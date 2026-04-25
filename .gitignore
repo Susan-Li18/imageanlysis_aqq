@@ -1,0 +1,6 @@
+.venv
+.vscode
+/sample_images/parrot.jpg
+/sample_images/fox.jpg
+__pycache__
+
