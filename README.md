@@ -1,19 +1,6 @@
----
-title: Edge Detection Demo
-emoji: 🔍
-colorFrom: blue
-colorTo: green
-sdk: streamlit
-sdk_version: "1.56.0"
-app_file: app.py
-pinned: false
----
-
 # Edge Detection Demo
 
 An interactive Streamlit app that teaches edge detection concepts through hands-on parameter exploration. Users can upload their own images (or use the built-in sample) and compare three classical algorithms — Sobel, Laplacian, and Canny — side by side with live diagnostics.
-
-Built for Assignment 2 of the Image Analysis course.
 
 ---
 
@@ -25,6 +12,26 @@ Built for Assignment 2 of the Image Analysis course.
 - Side-by-side comparison: original / edge map / colour overlay
 - Quantitative metrics per detector: edge density, fragment count, average fragment length
 - Inline interpretation of what each metric value means
+
+---
+
+## Project Structure
+
+```
+image_analysis_app/
+├── app.py                  # Main Streamlit application
+├── processing.py           # Edge detection algorithms (Sobel, Laplacian, Canny)
+├── metrics.py              # Quantitative metric computation
+├── utils.py                # Utility / helper functions
+├── requirements.txt        # Python dependencies
+├── docs/
+│   └── design_choices.md   # Algorithm & UI design notes
+├── sample_images/
+│   ├── parrot.jpg          # Built-in sample image
+│   └── fox.jpg             # Built-in sample image
+└── image/
+    └── README/     
+```
 
 ---
 
@@ -57,7 +64,7 @@ The app will open automatically at `http://localhost:8501`.
 
 ## Hugging Face Space
 
-> 🔗 **Live demo:** *(add your HF Space URL here after deployment)*
+> 🔗 **Live demo:** [Edge Detection Demo - a Hugging Face Space by Susan-L18](https://huggingface.co/spaces/Susan-L18/Image_Analysis_App)
 
 Deployed on Hugging Face Spaces using the Streamlit SDK.
 
@@ -65,7 +72,17 @@ Deployed on Hugging Face Spaces using the Streamlit SDK.
 
 ## Screenshots
 
-*(Add screenshots or a short GIF here after deployment)*
+Press the Upload button, upload your own image for edge dectection, or choose the build-in images(Parrot or Fox) to explore.
+
+![1778942443866](image/README/1778942443866.png)
+
+You can tune the parameters for each detector to explore, and side-by-side comparison: original / edge map / colour overlay
+
+![1778942861567](image/README/1778942861567.png)
+
+Quantitative metrics per detector: edge density, fragment count, average fragment length
+
+![1778942798539](image/README/1778942798539.png)
 
 ---
 
@@ -82,3 +99,7 @@ Deployed on Hugging Face Spaces using the Streamlit SDK.
 ## Design Notes
 
 See [docs/design_choices.md](docs/design_choices.md) for a short discussion of algorithm choices, metric design, and UI decisions.
+
+## Contact
+
+For questions or issues regarding this app, please contact: [jiajing.li@students.unibe.ch]()
