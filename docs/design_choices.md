@@ -33,15 +33,13 @@ Exposing the blur kernel size and sigma as sliders lets users see the noise–de
 
 Three metrics are computed for each detector:
 
-- **Edge Density (%):** fraction of pixels classified as edge. For Sobel/Laplacian (continuous magnitude), Sobel use the automatic threshold Ostu,and Laplacian
-  use the zero-crossing
+- **Edge Density (%):** fraction of pixels classified as edge.
 - **Fragment Count:** number of connected components in the binary edge map. A high count relative to a simple image usually signals noise-driven over-detection.
 - **Average Fragment Length (px):** mean connected-component area in pixels. Together with fragment count it reveals whether edges form long, meaningful contours or short spurious blobs.
 
-These three numbers are enough to distinguish a clean Canny result (low count, long fragments) from a noisy Laplacian result (high count, short fragments) without needing a ground-truth mask.
+These three numbers are enough to distinguish a clean Canny result (low count, long fragments) from a noisy Laplacian result (high count, short fragments) .
 
 ---
-
 
 ## Error Handling
 
@@ -53,4 +51,3 @@ Any corrupt, truncated, or non-image file raises an exception that is caught and
 ## Known Trade-offs and Limitations
 
 - Metrics are parameter-free diagnostics, not ground-truth scores. They tell you *how many* edges were found and *how connected* they are, but not whether those edges are the *correct* ones.
-- All processing runs synchronously on every slider change. For large images this can feel sluggish; caching with `@st.cache_data` on the processing functions is a natural next step.
