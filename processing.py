@@ -95,18 +95,19 @@ def laplacian_edge(image,ksize = 3,ksize_blur = 3, sigma = 1, return_raw=False):
     lap_norm = cv.normalize(lap,None,0,255,cv.NORM_MINMAX).astype(np.uint8)
     return lap_norm
 
-def laplacian_zero_crossing(image, ksize=3, ksize_blur=3, sigma=1):
+def laplacian_zero_crossing(image, ksize=3, ksize_blur=3, sigma=1, score_threshold=10.0):
     """
     Detect edges via Laplacian zero-crossings.
 
     A zero-crossing occurs where the Laplacian changes sign between
     horizontally or vertically adjacent pixels. Each zero-crossing is
     scored by the max absolute value of the two pixels straddling it.
-    Only the top 50% of zero-crossings by score are kept, suppressing
-    weak noise-induced sign changes.
+    Only zero-crossings whose score exceeds score_threshold are kept,
+    suppressing weak noise-induced sign changes.
 
-    With stronger Gaussian blur, noise zero-crossings become weak and
-    fall below the median score threshold, so edge density decreases.
+    Using a fixed absolute threshold (instead of a relative median) ensures
+    that stronger Gaussian blur, which reduces Laplacian magnitudes, also
+    reduces edge density as expected.
     Returns a binary uint8 image (0 or 255).
     """
     gray = to_gray(image)
@@ -123,13 +124,9 @@ def laplacian_zero_crossing(image, ksize=3, ksize_blur=3, sigma=1):
     v_cross = (sign[:-1, :] * sign[1:, :]) < 0
     v_score = np.maximum(abs_lap[:-1, :], abs_lap[1:, :])
 
-    # threshold: median score of all detected zero-crossings
-    all_scores = np.concatenate([h_score[h_cross].ravel(), v_score[v_cross].ravel()])
-    thresh = np.median(all_scores) if len(all_scores) > 0 else 0.0
-
     zc = np.zeros(lap.shape, dtype=np.uint8)
-    zc[:, :-1] |= (h_cross & (h_score > thresh)).astype(np.uint8)
-    zc[:-1, :] |= (v_cross & (v_score > thresh)).astype(np.uint8)
+    zc[:, :-1] |= (h_cross & (h_score > score_threshold)).astype(np.uint8)
+    zc[:-1, :] |= (v_cross & (v_score > score_threshold)).astype(np.uint8)
 
     return zc * 255
 
