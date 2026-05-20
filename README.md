@@ -1,3 +1,15 @@
+---
+title: Image Analysis App
+emoji: 🔬
+colorFrom: blue
+colorTo: green
+sdk: streamlit
+sdk_version: "1.56.0"
+python_version: "3.11"
+app_file: app.py
+pinned: false
+---
+
 # Edge Detection Demo
 
 An interactive Streamlit app that teaches edge detection concepts through hands-on parameter exploration. Users can upload their own images (or use the built-in sample) and compare three classical algorithms — Sobel, Laplacian, and Canny — side by side with live diagnostics.
