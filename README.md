@@ -9,7 +9,6 @@ python_version: "3.11"
 app_file: app.py
 pinned: false
 ---
-
 # Edge Detection Demo
 
 An interactive Streamlit app that teaches edge detection concepts through hands-on parameter exploration. Users can upload their own images (or use the built-in sample) and compare three classical algorithms — Sobel, Laplacian, and Canny — side by side with live diagnostics.
@@ -21,7 +20,7 @@ An interactive Streamlit app that teaches edge detection concepts through hands-
 - Upload any PNG/JPG image, or use the built-in sample image
 - Tune Gaussian blur kernel size and sigma for each detector
 - Adjust Canny hysteresis thresholds (low and high) interactively
-- Side-by-side comparison: original / edge map / colour overlay
+- Side-by-side comparison: original / edge map
 - Quantitative metrics per detector: edge density, fragment count, average fragment length
 - Inline interpretation of what each metric value means
 
@@ -42,7 +41,7 @@ image_analysis_app/
 │   ├── parrot.jpg          # Built-in sample image
 │   └── fox.jpg             # Built-in sample image
 └── image/
-    └── README/     
+    └── README/   
 ```
 
 ---
@@ -88,11 +87,7 @@ Press the Upload button, upload your own image for edge dectection, or choose th
 
 ![1778942443866](image/README/1778942443866.png)
 
-You can tune the parameters for each detector to explore, and side-by-side comparison: original / edge map / colour overlay
-
-![1778942861567](image/README/1778942861567.png)
-
-Quantitative metrics per detector: edge density, fragment count, average fragment length
+You can tune the parameters for each detector to explore, and side-by-side comparison: original / edge map  and quantitative metrics per detector: edge density, fragment count, average fragment length
 
 ![1778942798539](image/README/1778942798539.png)
 
@@ -100,7 +95,6 @@ Quantitative metrics per detector: edge density, fragment count, average fragmen
 
 ## Known Limitations
 
-- **Sobel / Laplacian metrics use a fixed 90th-percentile threshold** to binarise the magnitude map. This makes density values comparable across images but may not match a visually chosen threshold.
 - **Large images (> ~4 MP)** may cause slow recomputation on every slider interaction; consider downscaling before uploading.
 - **Transparency / RGBA images** are automatically converted to RGB on upload; the alpha channel is discarded.
 - **Canny is not suited for colour images** — the app converts to greyscale before detection, so colour-specific edge information is lost.
