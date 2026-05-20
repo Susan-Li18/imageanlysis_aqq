@@ -3,7 +3,6 @@ import cv2 as cv
 from PIL import Image
 import numpy as np
 import processing as proc
-import utils as ut
 import metrics as me
 
 
@@ -45,26 +44,24 @@ with col2:
     sigma_sobel = st.slider("sigma",min_value=0.0, max_value=5.0,value=1.0, step=0.1, key="blur_sigma_sobel")
 # image edge detection
 
-sobel_edge = proc.sobel_edge(img_array,ksize=3, ksize_blur= ksize_blur_sob,sigma = sigma_sobel)
 sobel_edge_raw = proc.sobel_edge(img_array,ksize=3, ksize_blur= ksize_blur_sob,sigma = sigma_sobel, return_raw=True)
-overlay_sobel = ut.overlay_magnitude(img_array,sobel_edge_raw)
-sobel_metrics =  me.evaluate_edge_img(sobel_edge_raw,percentile=90)
+sobel_edge_norm = cv.normalize(sobel_edge_raw, None, 0, 255, cv.NORM_MINMAX).astype(np.uint8)
+_, sobel_edge_binary = cv.threshold(sobel_edge_norm, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
+sobel_metrics = me.evaluate_edge_img(sobel_edge_binary)
 
 # show images side by side
-col1, col2,col3 = st.columns(3)
+col1, col2 = st.columns(2)
 with col1:
     st.image(img_array, caption= "Original")
-    st.metric("Egde Density", f"{sobel_metrics['edge_density_pct']:.2f}%")
-    
 with col2:
-    st.image(sobel_edge, caption="Edge detection by Sobel kernel")
-    st.metric("Fragments", f"{sobel_metrics['num_fragments']}")
-with col3:
-    st.image(cv.cvtColor(overlay_sobel,cv.COLOR_BGR2RGB),caption = "Sobel : Edge Overlay")
-    st.metric("Avg Length", f"{sobel_metrics['avg_length']:.1f}px")
+    st.image(sobel_edge_binary, caption="Edge detection by Sobel kernel (Otsu)")
+m1, m2, m3 = st.columns(3)
+m1.metric("Edge Density", f"{sobel_metrics['edge_density_pct']:.2f}%")
+m2.metric("Fragments", f"{sobel_metrics['num_fragments']}")
+m3.metric("Avg Length", f"{sobel_metrics['avg_length']:.1f}px")
 st.caption(
-    f"ℹ️ **Interpretation:** Edge density {sobel_metrics['edge_density_pct']:.1f}% is the fraction of pixels above the 90th-percentile gradient — "
-    "higher values mean more detected edges. "
+    f"ℹ️ **Interpretation:** Edge density {sobel_metrics['edge_density_pct']:.1f}% is the fraction of edge pixels detected by Otsu auto-thresholding — "
+    "increasing Gaussian blur suppresses noise and reduces edge density. "
     f"{sobel_metrics['num_fragments']} fragments with avg length {sobel_metrics['avg_length']:.0f}px: "
     "many short fragments suggest noise amplification; fewer, longer fragments indicate clean continuous contours. "
     "Increase Gaussian blur (larger kernel or sigma) to reduce noise-driven fragments."
@@ -81,21 +78,18 @@ with col1:
 with col2:
     sigma_lap = st.slider("sigma",min_value=0.0, max_value=5.0,value=1.0, step=0.1, key="blur_sigma_lap")
 # image edge detection
-Laplacian_edge = proc.laplacian_edge(img_array,ksize=3,ksize_blur=ksize_blur_lap,sigma=sigma_lap)
-Laplacian_edge_raw = proc.laplacian_edge(img_array,ksize=3, ksize_blur= ksize_blur_lap,sigma = sigma_lap, return_raw=True)
-overlay_lap = ut.overlay_magnitude(img_array,Laplacian_edge_raw)
-lap_metrics = me.evaluate_edge_img(Laplacian_edge_raw,percentile=90)
+Laplacian_edge_binary = proc.laplacian_zero_crossing(img_array,ksize=3, ksize_blur=ksize_blur_lap,sigma=sigma_lap)
+lap_metrics = me.evaluate_edge_img(Laplacian_edge_binary)
 # show images side by side
-col1, col2,col3 = st.columns(3)
+col1, col2 = st.columns(2)
 with col1:
     st.image(img_array, caption= "Original")
-    st.metric("Edge Density", f"{lap_metrics['edge_density_pct']:.2f}%")
 with col2:
-    st.image(Laplacian_edge, caption="Edge detection by Laplacian kernel")
-    st.metric("Fragments",f"{lap_metrics['num_fragments']}")
-with col3:
-    st.image(cv.cvtColor(overlay_lap,cv.COLOR_BGR2RGB), caption="Laplacian: Edge Overlay")
-    st.metric("Avg Length",f"{lap_metrics['avg_length']:.1f}px")
+    st.image(Laplacian_edge_binary, caption="Edge detection by Laplacian (zero-crossing)")
+m1, m2, m3 = st.columns(3)
+m1.metric("Edge Density", f"{lap_metrics['edge_density_pct']:.2f}%")
+m2.metric("Fragments", f"{lap_metrics['num_fragments']}")
+m3.metric("Avg Length", f"{lap_metrics['avg_length']:.1f}px")
 st.caption(
     f"ℹ️ **Interpretation:** Laplacian detects zero-crossings of the second derivative — it is highly sensitive to noise. "
     f"Edge density {lap_metrics['edge_density_pct']:.1f}% with {lap_metrics['num_fragments']} fragments: "
@@ -117,19 +111,17 @@ with col2:
     high_threshold = st.slider("high threshold",0, 300, 150,1,key="high_thr")
 # image edge detection
 canny_edge = proc.canny_edge(img_array,low_threshold,high_threshold,blur_ksize,blur_sigma)
-overlay_canny = ut.overlay(img_array,canny_edge)
 canny_metrics = me.evaluate_edge_img(canny_edge)
 # show images side by side
-col1, col2,col3 = st.columns(3)
+col1, col2 = st.columns(2)
 with col1:
     st.image(img_array, caption= "Original")
-    st.metric("Edge Density",f"{canny_metrics['edge_density_pct']:.2f}%")
 with col2:
     st.image(canny_edge, caption="Edge detection by Canny")
-    st.metric("Fragment",f"{canny_metrics['num_fragments']}")
-with col3:
-    st.image(cv.cvtColor(overlay_canny,cv.COLOR_BGR2RGB),caption="Canny: Edge Overlay")
-    st.metric("Avg Length",f"{canny_metrics['avg_length']:.1f}px")
+m1, m2, m3 = st.columns(3)
+m1.metric("Edge Density", f"{canny_metrics['edge_density_pct']:.2f}%")
+m2.metric("Fragment", f"{canny_metrics['num_fragments']}")
+m3.metric("Avg Length", f"{canny_metrics['avg_length']:.1f}px")
 st.caption(
     f"ℹ️ **Interpretation:** Canny uses hysteresis thresholding (low={low_threshold}, high={high_threshold}) to keep only strong, "
     "connected edge pixels. "
