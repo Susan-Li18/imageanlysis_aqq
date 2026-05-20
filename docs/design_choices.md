@@ -11,11 +11,11 @@ The learning objective is to help users build intuition for *why* preprocessing 
 
 Three classical detectors are included to highlight different mathematical approaches:
 
-| Detector | Core idea | Key strength | Key weakness |
-|----------|-----------|--------------|--------------|
-| **Sobel** | First-order gradient (finite differences in x and y) | Directionally interpretable, smooth response | Sensitive to noise without sufficient blur |
-| **Laplacian** | Second-order derivative (zero-crossings) | Isotropic — no directional bias | Very noise-sensitive; requires strong pre-blur |
-| **Canny** | Gradient + non-maximum suppression + hysteresis | Thin, connected edges; two-threshold control | More parameters; assumes edges are thin ridges |
+| Detector            | Core idea                                            | Key strength                                 | Key weakness                                   |
+| ------------------- | ---------------------------------------------------- | -------------------------------------------- | ---------------------------------------------- |
+| **Sobel**     | First-order gradient (finite differences in x and y) | Directionally interpretable, smooth response | Sensitive to noise without sufficient blur     |
+| **Laplacian** | Second-order derivative (zero-crossings)             | Isotropic — no directional bias             | Very noise-sensitive; requires strong pre-blur |
+| **Canny**     | Gradient + non-maximum suppression + hysteresis      | Thin, connected edges; two-threshold control | More parameters; assumes edges are thin ridges |
 
 Placing all three in one app makes the trade-offs directly observable rather than abstract.
 
@@ -33,7 +33,8 @@ Exposing the blur kernel size and sigma as sliders lets users see the noise–de
 
 Three metrics are computed for each detector:
 
-- **Edge Density (%):** fraction of pixels classified as edge. For Sobel/Laplacian (continuous magnitude), the top 10% of pixel values (90th percentile) are thresholded as edges, making the percentage comparable across images with different contrast ranges.
+- **Edge Density (%):** fraction of pixels classified as edge. For Sobel/Laplacian (continuous magnitude), Sobel use the automatic threshold Ostu,and Laplacian
+  use the zero-crossing
 - **Fragment Count:** number of connected components in the binary edge map. A high count relative to a simple image usually signals noise-driven over-detection.
 - **Average Fragment Length (px):** mean connected-component area in pixels. Together with fragment count it reveals whether edges form long, meaningful contours or short spurious blobs.
 
@@ -41,14 +42,6 @@ These three numbers are enough to distinguish a clean Canny result (low count, l
 
 ---
 
-## Visualisation: Colour Overlay
-
-In addition to the raw edge map, each section shows a colour overlay (red edges on greyscale background).
-This overlay makes it easier to judge spatial accuracy — whether edges align with visible object boundaries — compared with inspecting a binary map in isolation.
-
-For Sobel and Laplacian, `overlay_magnitude` applies the same 90th-percentile threshold used for the metrics before colouring, so the overlay is always consistent with the reported numbers.
-
----
 
 ## Error Handling
 
@@ -60,5 +53,4 @@ Any corrupt, truncated, or non-image file raises an exception that is caught and
 ## Known Trade-offs and Limitations
 
 - Metrics are parameter-free diagnostics, not ground-truth scores. They tell you *how many* edges were found and *how connected* they are, but not whether those edges are the *correct* ones.
-- The 90th-percentile threshold for Sobel/Laplacian is fixed to keep the UI simple. A more advanced app could expose this as a slider.
 - All processing runs synchronously on every slider change. For large images this can feel sluggish; caching with `@st.cache_data` on the processing functions is a natural next step.
