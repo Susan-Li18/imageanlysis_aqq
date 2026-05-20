@@ -47,7 +47,9 @@ with col2:
 sobel_edge_raw = proc.sobel_edge(img_array,ksize=3, ksize_blur= ksize_blur_sob,sigma = sigma_sobel, return_raw=True)
 sobel_edge_norm = cv.normalize(sobel_edge_raw, None, 0, 255, cv.NORM_MINMAX).astype(np.uint8)
 _, sobel_edge_binary = cv.threshold(sobel_edge_norm, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
-sobel_metrics = me.evaluate_edge_img(sobel_edge_binary)
+# Use raw magnitude with a fixed percentile threshold for metrics to avoid
+# NORM_MINMAX amplifying noise at high sigma (which inflates edge density).
+sobel_metrics = me.evaluate_edge_img(sobel_edge_raw, percentile=90)
 
 # show images side by side
 col1, col2 = st.columns(2)
@@ -60,8 +62,8 @@ m1.metric("Edge Density", f"{sobel_metrics['edge_density_pct']:.2f}%")
 m2.metric("Fragments", f"{sobel_metrics['num_fragments']}")
 m3.metric("Avg Length", f"{sobel_metrics['avg_length']:.1f}px")
 st.caption(
-    f"ℹ️ **Interpretation:** Edge density {sobel_metrics['edge_density_pct']:.1f}% is the fraction of edge pixels detected by Otsu auto-thresholding — "
-    "increasing Gaussian blur suppresses noise and reduces edge density. "
+    f"ℹ️ **Interpretation:** Edge density {sobel_metrics['edge_density_pct']:.1f}% is the fraction of pixels whose gradient magnitude exceeds the 90th percentile — "
+    "increasing Gaussian blur smooths the image and reduces true edge gradients, so edge density should decrease. "
     f"{sobel_metrics['num_fragments']} fragments with avg length {sobel_metrics['avg_length']:.0f}px: "
     "many short fragments suggest noise amplification; fewer, longer fragments indicate clean continuous contours. "
     "Increase Gaussian blur (larger kernel or sigma) to reduce noise-driven fragments."
