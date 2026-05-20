@@ -42,14 +42,17 @@ with col1:
                             step=2, key="ksize_blur_sob")
 with col2:
     sigma_sobel = st.slider("sigma",min_value=0.0, max_value=5.0,value=1.0, step=0.1, key="blur_sigma_sobel")
+SOBEL_THRESHOLD = 30  # fixed absolute threshold on raw Sobel magnitude
 # image edge detection
 
 sobel_edge_raw = proc.sobel_edge(img_array,ksize=3, ksize_blur= ksize_blur_sob,sigma = sigma_sobel, return_raw=True)
 sobel_edge_norm = cv.normalize(sobel_edge_raw, None, 0, 255, cv.NORM_MINMAX).astype(np.uint8)
 _, sobel_edge_binary = cv.threshold(sobel_edge_norm, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
-# Use raw magnitude with a fixed percentile threshold for metrics to avoid
-# NORM_MINMAX amplifying noise at high sigma (which inflates edge density).
-sobel_metrics = me.evaluate_edge_img(sobel_edge_raw, percentile=90)
+# Apply fixed absolute threshold on raw magnitude for metrics.
+# This avoids NORM_MINMAX re-scaling the range after each sigma change,
+# which would otherwise inflate edge density at high sigma.
+sobel_binary_metrics = (sobel_edge_raw >= SOBEL_THRESHOLD).astype(np.uint8)
+sobel_metrics = me.evaluate_edge_img(sobel_binary_metrics)
 
 # show images side by side
 col1, col2 = st.columns(2)
@@ -62,8 +65,8 @@ m1.metric("Edge Density", f"{sobel_metrics['edge_density_pct']:.2f}%")
 m2.metric("Fragments", f"{sobel_metrics['num_fragments']}")
 m3.metric("Avg Length", f"{sobel_metrics['avg_length']:.1f}px")
 st.caption(
-    f"ℹ️ **Interpretation:** Edge density {sobel_metrics['edge_density_pct']:.1f}% is the fraction of pixels whose gradient magnitude exceeds the 90th percentile — "
-    "increasing Gaussian blur smooths the image and reduces true edge gradients, so edge density should decrease. "
+    f"ℹ️ **Interpretation:** Edge density {sobel_metrics['edge_density_pct']:.1f}% is the fraction of pixels whose raw Sobel gradient magnitude ≥ {SOBEL_THRESHOLD}. "
+    "Increasing sigma reduces gradient magnitudes, so edge density decreases. "
     f"{sobel_metrics['num_fragments']} fragments with avg length {sobel_metrics['avg_length']:.0f}px: "
     "many short fragments suggest noise amplification; fewer, longer fragments indicate clean continuous contours. "
     "Increase Gaussian blur (larger kernel or sigma) to reduce noise-driven fragments."
